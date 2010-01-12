@@ -8,7 +8,7 @@ var sys = require("sys");
 var http = require("http");
 var redis = require("./redis");
 var showdown = require("./showdown");
-require("./nerve");
+var nerve = require("./nerve/nerve");
 
 var nodewiki = exports;
 
@@ -79,18 +79,18 @@ nodewiki.listen = function() {
 	return function(port, host) {
 		client.connect(function() {
 			client.select(nodewiki.db_number).addCallback(function() {
-				[
+				nerve.create([
 					[/^(.*)\/edit$/, function(req, res, key) {
 						get_content(key, function(value) {
 							edit_page(res, key, value);
 						});
 					}],
-					[get(/^(.*)$/), function(req, res, key) {
+					[nerve.get(/^(.*)$/), function(req, res, key) {
 						get_content(key + ":formatted", function(value) {
 							show_page(res, key, value);
 						});
 					}],
-					[post(/^(.*)$/), function(req, res, key) {
+					[nerve.post(/^(.*)$/), function(req, res, key) {
 						get_post_params(req, function(content) {
 							save_content(key, content, function() {
 								get_content(key + ":formatted", function(value) {
@@ -99,7 +99,7 @@ nodewiki.listen = function() {
 							});
 						});
 					}]
-				].serve(port, host);
+				]).serve(port, host);
 			});
 		});
 	};
